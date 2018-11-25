@@ -64,6 +64,9 @@ numLongChains' = length (filter (\xs -> length xs > 15) (map chain [1..100]))
 sum' :: (Num a) => [a] -> a
 sum' xs = foldl (+) 0 xs
 
+-- fold1 - take [0] as an acc
+-- fold1' - not lazy acc (without thunks)
+
 elem' :: (Eq a) => a -> [a] -> Bool
 elem' y ys = foldl (\acc x -> if x == y then True else acc) False ys
 
@@ -76,7 +79,7 @@ sqrtSums = length (takeWhile (<1000) (scanl1 (+) (map sqrt [1..]))) + 1
 
 -- function application
 -- ($) :: (a -> b) -> a -> b
--- f $ x = f
+-- f $ x = f x
 firstTenSqrtsSum = sum (map sqrt [1..10])
 firstTenSqrtsSum' = sum $ map sqrt [1..10]
 
