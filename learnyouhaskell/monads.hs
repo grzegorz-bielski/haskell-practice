@@ -4,6 +4,7 @@ import Control.Monad.State
 import System.Random
 import Data.Ratio
 
+-- (<>) :: Semigroup a => a -> a -> a
 -- fmap :: (Functor f) => (a -> b) -> f a -> f b  
 -- (<*>) :: (Applicative f) => f (a -> b) -> f a -> f b  
 -- (>>=) :: (Monad m) => m a -> (a -> m b) -> m b  
