@@ -3,7 +3,7 @@ import Data.Char
 import System.IO
 import System.Directory
 import System.Environment  
-import Data.List 
+import Data.List
 
 printIt = do
     line <- getLine

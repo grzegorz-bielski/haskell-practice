@@ -1,6 +1,7 @@
 module FromChapter8 where
 
 import Data.List (intersperse)
+import Data.Char
 
 dividedBy :: Integral a => a -> a -> Maybe (a, a)
 dividedBy _ 0 = Nothing
@@ -133,3 +134,65 @@ mySqr = [x^2 | x <- [1..5]]
 myCube = [y^3 | y <- [1..5]]
 tpl = [(x, y) | x <- mySqr, y <- myCube]
 tpl' = [(x, y) | x <- mySqr, y <- myCube, x < 50 && y < 50]
+
+-- 9.10
+threeMult = filter (\x -> x `rem` 3 == 0)
+threeMultLngth = length . threeMult
+myFltr = filter (\x -> not $ elem x ["a", "an", "the"]) . words
+
+-- 9.12
+uppers :: String -> String
+uppers "" = ""
+uppers (x:xs) = toUpper x : uppers xs
+
+uppers' :: String -> String
+uppers' = fmap toUpper
+
+onlyUppers :: String -> String
+onlyUppers = filter isUpper
+
+onlyFirst (x:xs) = toUpper x : xs
+
+onlyFirstUpper = toUpper . head
+
+--
+
+any' :: (a -> Bool) -> [a] -> Bool
+any' _ [] = False
+any' f (x:xs) = f x || any' f xs
+
+elem' :: Eq a => a -> [a] -> Bool
+elem' a = any' (==a)
+
+reverse' :: [a] -> [a]
+reverse' [] = []
+reverse' (x:xs) = reverse' xs <> [x]
+
+squish :: [[a]] -> [a]
+squish [] = []
+squish (x:xs) = x <> squish xs
+
+squishMap :: (a -> [b]) -> [a] -> [b]
+squishMap _ [] = []
+squishMap f (x:xs) = f x <> squishMap f xs 
+
+squish' :: [[a]] -> [a]
+squish' = squishMap id
+
+check :: Ordering -> (a -> a -> Ordering) -> (a -> a -> a)
+check ord f = (\x y -> if f x y == ord then y else x)
+
+maximumBy' :: (a -> a -> Ordering) -> [a] -> a
+maximumBy' f xs = foldl (check GT f) (head xs) xs
+
+minimumBy' :: (a -> a -> Ordering) -> [a] -> a
+minimumBy' f xs = foldl (check LT f) (head xs) xs
+
+maximum' :: (Ord a) => [a] -> a
+maximum' = maximumBy' compare
+
+minimum' :: (Ord a) => [a] -> a
+minimum' = minimumBy' compare
+
+-- 10
+
