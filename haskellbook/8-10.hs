@@ -196,3 +196,23 @@ minimum' = minimumBy' compare
 
 -- 10
 
+myOr :: [Bool] -> Bool
+myOr = foldr (||) False
+
+myAny :: (a -> Bool) -> [a] -> Bool
+myAny f = or . fmap f
+
+myElem :: Eq a => a -> [a] -> Bool
+myElem a = foldr (\x acc -> if acc then acc else x == a) False
+
+myElem' :: Eq a => a -> [a] -> Bool
+myElem' a = any (\x ->  x == a)
+
+myReverse :: [a] -> [a]
+myReverse = foldr (\x acc -> acc <> [x]) []
+
+myMap :: (a -> b) -> [a] -> [b]
+myMap f = foldr (\x acc -> (f x) : acc) []
+
+myFilter :: (a -> Bool) -> [a] -> [a]
+myFilter f = foldr (\x acc -> if f x then x : acc else acc) []

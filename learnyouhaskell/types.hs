@@ -204,3 +204,7 @@ instance Functor (Either' a) where
 -- instance Functor (Map.Map k) where
 --     fmap f empty = Map.empty
 --     fmap = Map.map
+
+-- The reason these types are called “algebraic” 
+-- is that we can create new types by taking 
+-- the “sum” or “product” of existing types

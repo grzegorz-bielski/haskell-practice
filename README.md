@@ -1,1 +1,1 @@
-Nothing interesting in here. Just some notes and exercises made during learning from: http://haskellbook.com/ and http://learnyouahaskell.com
+Nothing interesting in here. Just some notes and exercises made during learning Haskell
