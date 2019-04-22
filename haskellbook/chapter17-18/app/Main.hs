@@ -3,13 +3,14 @@
 module Main where
 
 import Lib
+import Control.Monad ((>=>), join, ap)
 import Data.Monoid
 import Test.QuickCheck
 import Test.QuickCheck.Checkers
 import Test.QuickCheck.Classes
 import GHC.Arr
 import Data.List (elemIndex)
-import Control.Applicative (liftA3)
+import Control.Applicative (liftA3, liftA2)
 
 -- Functors
 --------------------
@@ -84,11 +85,23 @@ instance Functor Option where
     fmap f None = None 
     fmap f (Some a) = Some $ f a
 
+---
+
 data Sum' a b = First' a | Second b deriving (Eq, Show)
 
 instance Functor (Sum' a) where
     fmap f (First' c) = First' c
     fmap f (Second b) = Second $ f b
+
+instance Applicative (Sum' a) where
+    pure a = Second a
+    (<*>) (First' f) _ = First' f
+    (<*>) _ (First' a) = First' a
+    (<*>) (Second f) (Second a) = Second $ f a
+
+instance Monad (Sum' a) where
+    (>>=) (First' a) _ = (First' a)
+    (>>=) (Second a) f = f a
 
 newtype Mu f = InF { outF :: f (Mu f) }
 
@@ -271,6 +284,9 @@ instance Applicative Identity where
     pure x = Identity x
     (<*>) (Identity f) (Identity a) = Identity $ f a
 
+instance Monad Identity where
+    (>>=) (Identity a) f = f a
+
 newtype Constant a b = Constant { getConstant :: a }
 
 instance Functor (Constant a) where 
@@ -297,9 +313,6 @@ instance Monoid Bull where
 
 instance EqProp Bull where (=-=) = eq
 
--- quickBatch (monoid Twoo) // fail
-
--- xss = [("b", "w", 1 :: Int)]
 type SSI = (String, String, Int)
 
 applicativeTest :: List (String, String, Int)
@@ -317,6 +330,74 @@ combos :: [a] -> [b] -> [c] -> [(a, b, c)]
 combos = liftA3 (,,)
 
 kek = combos stops vowels stops
+
+---
+
+sayHi :: String -> IO String 
+sayHi str = putStrLn str >> getLine
+
+readM :: Read a => String -> IO a 
+readM = pure . read
+
+-- Kleisli composition
+getAge :: String -> IO Int 
+getAge = sayHi >=> readM
+
+askForAge :: IO Int 
+askForAge = getAge "Halko, give me your years"
+
+--- 
+
+data Nope a = DontCare 
+
+instance Functor Nope where
+    fmap _ _ = DontCare
+
+instance Applicative Nope where
+    pure _ = DontCare
+    (<*>) _ _ = DontCare
+
+instance Monad Nope where
+    (>>=) _ _ = DontCare
+
+-- data EitheRev b a = Left'' a | Right'' b 
+
+-- instance Functor (EitheRev b) where
+--     fmap f (Right'' b) = Right'' b
+--     fmap f (Left'' a) = Left'' $ f a 
+
+-- instance Applicative (EitheRev b) where
+--     pure a = Left'' a 
+--     (<*>) ()
+
+j :: Monad m => m (m a) -> m a
+-- j = join
+j a = a >>= id
+
+l1 :: Monad m => (a -> b) -> m a -> m b
+l1 = fmap
+
+l2 :: Monad m => (a -> b -> c) -> m a -> m b -> m c
+-- l2 = liftA2
+l2 f a b = f <$> a <*> b
+
+a' :: Monad m => m a -> m (a -> b) -> m b
+a' = flip ap
+-- a' a f = f <*> a
+
+meh :: Monad m => [a] -> (a -> m b) -> m [b]
+meh [] _ = pure []
+meh (x:xs) f = do 
+   cur <- f x
+   rest <- meh xs f
+   pure $ cur : rest
+
+meh' :: Monad m => [a] -> (a -> m b) -> m [b]
+meh' [] _ = pure []
+meh' (x:xs) f = liftA2 (:) (f x) (meh xs f) 
+
+flipType :: (Monad m) => [m a] -> m [a]
+flipType xs = meh xs id
 
 main :: IO ()
 main = quickBatch $ applicative applicativeTest
