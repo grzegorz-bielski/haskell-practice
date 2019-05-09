@@ -1,15 +1,15 @@
-import Data.Monoid
-import Control.Applicative
-import qualified Data.Foldable as F  
+import           Control.Applicative
+import qualified Data.Foldable       as F
+import           Data.Monoid
 
 -- functor laws:
 
 -- 1. fmap id = id
--- if we map the `id` function over a functor, the functor that we get back 
+-- if we map the `id` function over a functor, the functor that we get back
 -- should be the same as the original functor
 -- 2. fmap (f . g) = fmap f . fmap g
--- composing two functions and then mapping the resulting function over 
--- a functor should be the same as first mapping one function over 
+-- composing two functions and then mapping the resulting function over
+-- a functor should be the same as first mapping one function over
 -- the functor and then mapping the other one
 
 -- applicative functors laws:
@@ -20,34 +20,34 @@ import qualified Data.Foldable as F
 -- 4. pure f <*> pure x = pure (f x)
 -- 5. u <*> pure y = pure ($ y) <*> u
 
--- class (Functor f) => Applicative' fu where  
---     pure :: a -> f a  
+-- class (Functor f) => Applicative' fu where
+--     pure :: a -> f a
 --     (<*>) :: f (a -> b) -> f a -> f b
 
 -- instance Applicative' Maybe where
 --     pure = Just
 --     Nothing <*> _ = Nothing
---     (Just f) <*> sth = fmap f sth
+--     (Just f) <*> sth = fmap f sthr
 
 (Just val) = pure (+) <*> Just 3 <*> Just 5
 name = (++) <$> Just "first" <*> Just "second"
 everyCombination = (*) <$> [2,5,10] <*> [8,10,11]
 threes = (\x y z -> [x,y,z]) <$> (+3) <*> (*2) <*> (/2) $ 5
-zipped = getZipList $ (+) <$> ZipList [1,2,3] <*> ZipList (repeat 100) 
+zipped = getZipList $ (+) <$> ZipList [1,2,3] <*> ZipList (repeat 100)
 
-myAction :: IO String  
-myAction = (++) <$> getLine <*> getLine 
+myAction :: IO String
+myAction = (++) <$> getLine <*> getLine
 
-liftA2' :: (Applicative f) => (a -> b -> c) -> f a -> f b -> f c  
+liftA2' :: (Applicative f) => (a -> b -> c) -> f a -> f b -> f c
 liftA2' f a b = f <$> a <*> b
 
-sequenceA' :: (Applicative f) => [f a] -> f [a]  
-sequenceA' = foldr (liftA2' (:)) (pure [])  
+sequenceA' :: (Applicative f) => [f a] -> f [a]
+sequenceA' = foldr (liftA2' (:)) (pure [])
 
 -- Just [3, 2, 1]
 res = sequenceA' [Just 3, Just 2, Just 1]
 
-newtype ZipList a = ZipList' { getZipList' :: [a] }  
+newtype ZipList a = ZipList' { getZipList' :: [a] }
 
 newtype Pair b a = Pair { getPair :: (a,b)}
 
@@ -86,18 +86,18 @@ instance Monoid' Any' where
     Any' x `mappend'` Any' y = Any' (x || y)
 
 -- All -//-
-instance Monoid' Ordering where  
-    mempty' = EQ  
-    LT `mappend'` _ = LT  
-    EQ `mappend'` y = y  
+instance Monoid' Ordering where
+    mempty' = EQ
+    LT `mappend'` _ = LT
+    EQ `mappend'` y = y
     GT `mappend'` _ = GT
-    
-lengthCompare :: String -> String -> Ordering  
-lengthCompare x y = (length x `compare` length y) `mappend'` 
+
+lengthCompare :: String -> String -> Ordering
+lengthCompare x y = (length x `compare` length y) `mappend'`
                     (vowels x `compare` vowels y) `mappend`
                     (x `compare` y)
-    where vowels = length . filter (`elem` "aeiou") 
-    
+    where vowels = length . filter (`elem` "aeiou")
+
 -- Foldable
 reduced = F.foldl (*) 1 [1,2,3]
 reduced' = F.foldl (||) False $ Just True
@@ -110,17 +110,17 @@ instance F.Foldable Tree where
                              f x           `mappend`
                              F.foldMap f r
 
-testTree = Node 5  
-            (Node 3  
-                (Node 1 Empty Empty)  
-                (Node 6 Empty Empty)  
-            )  
-            (Node 9  
-                (Node 8 Empty Empty)  
-                (Node 10 Empty Empty)  
+testTree = Node 5
+            (Node 3
+                (Node 1 Empty Empty)
+                (Node 6 Empty Empty)
             )
-            
+            (Node 9
+                (Node 8 Empty Empty)
+                (Node 10 Empty Empty)
+            )
+
 nodesSum = F.foldl (+) 0 testTree
 
 isBiggerThan :: Int -> Bool
-isBiggerThan n = getAny $ F.foldMap (\x -> Any $ x == n) testTree    
+isBiggerThan n = getAny $ F.foldMap (\x -> Any $ x == n) testTree
