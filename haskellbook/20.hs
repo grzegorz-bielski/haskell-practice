@@ -42,7 +42,8 @@ fold = foldMap id
 -- fold = foldr (\curr acc -> curr <> acc) mempty
 
 foldMap'' :: (Foldable t, Monoid m) => (a -> m) -> t a -> m
-foldMap'' f = foldr (\curr acc -> f curr <> acc) mempty
+-- foldMap'' f = foldr (\curr acc -> f curr <> acc) mempty
+foldMap'' f = foldr (mappend . f) mempty
 
 ---
 data Constant a b = Constant b
