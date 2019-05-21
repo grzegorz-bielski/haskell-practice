@@ -4,6 +4,7 @@ module Main where
 
 import           Control.Applicative      (liftA2, liftA3)
 import           Control.Monad            (ap, join, (>=>))
+import           Data.Char
 import           Data.List                (elemIndex)
 import           Data.Monoid
 import           GHC.Arr
@@ -242,7 +243,7 @@ instance Functor g => Functor (Notorious g o a) where
 
 data List a =
       Nil
-    | Cons a (List a) deriving (Eq)
+    | Cons a (List a)
 
 instance Show a => Show (List a) where
     show a = "funny" ++ show a
@@ -275,7 +276,7 @@ instance Traversable List where
 ---
 
 concat' :: List (List a) -> List a
-concat' = foldr (<>) Nil
+concat' = foldr (<>) mempty
 
 instance Monad List where
     return = pure
@@ -493,6 +494,71 @@ meh' (x:xs) f = liftA2 (:) (f x) (meh xs f)
 
 flipType :: (Monad m) => [m a] -> m [a]
 flipType xs = meh xs id
+
+---
+-- Reader
+
+cap :: [Char] -> [Char]
+cap = fmap toUpper
+
+rev :: [Char] -> [Char]
+rev = reverse
+
+tupled' :: [Char] -> ([Char], [Char])
+tupled' = liftA2 (,) cap rev
+-- tupled' = cap >>= (\a
+--             -> rev >>= (\b
+--                     -> pure (a, b)))
+-- tupled' x = traverse (\([x, y]) -> pure (x, y)) [cap x, rev x]
+-- tupled' = do
+--     a <- cap
+--     b <- rev
+--     pure (a, b)
+
+-- function instances:
+
+-- instance Functor ((->) r) where
+--     fmap = (.)
+
+-- instance Applicative ((->) r) where
+--     pure x = (\_ -> x)
+--     (<*>) f g = \x -> f x (g x)
+
+-- instance Monad ((->) r) where
+--     (>>=) f g = \x -> g (f x) x
+
+newtype Reader r a = Reader { runReader :: r -> a }
+
+instance Functor (Reader r) where
+    fmap f (Reader g) = Reader $ f . g
+
+instance Applicative (Reader r) where
+    pure a = Reader (\_ -> a)
+    (<*>) (Reader f) (Reader g) = Reader $ \r -> (f r) (g r)
+
+instance Monad (Reader r) where
+    (>>=) (Reader f) g = Reader $ \r -> runReader (g (f r)) r
+
+liftA2' :: Applicative f => (a -> b -> c) -> f a -> f b -> f c
+liftA2' f t t' = f <$> t <*> t'
+
+ask :: Reader a a
+ask = Reader id
+
+asks :: (r -> a) -> Reader r a
+asks = Reader
+
+---
+
+
+
+---
+
+maybeTraverse :: Maybe [Int]
+maybeTraverse = traverse (\x -> case x of
+                        Nothing -> pure 0
+                        Just x  -> pure x
+                ) [Just 1, Just 3, Nothing]
 
 main :: IO ()
 main = quickBatch $ applicative applicativeTest
