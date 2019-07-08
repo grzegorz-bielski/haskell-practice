@@ -93,3 +93,27 @@ instance Monad Identity where
 
 instance (Monad m) => Monad (IdentityT m) where
     (>>=) (IdentityT ma) f = IdentityT $ ma >>= runIdentityT . f
+
+---
+
+most :: [Maybe (Identity (a -> b))] -> [Maybe (Identity a)] -> [Maybe (Identity b) ]
+most = three . two . one where
+    one    = ((fmap . fmap) (<*>)) -- 1. Identity
+    two    = fmap (<*>)            -- 2. Maybe
+    three  = (<*>)                 -- 3. Array
+
+innerMost :: [Maybe (Identity (a -> b))] -> [Maybe (Identity a -> Identity b)]
+innerMost = (fmap . fmap) (<*>)
+
+innerMost' :: Maybe (Identity (a -> b)) -> Maybe (Identity a -> Identity b)
+innerMost' = fmap (<*>)
+
+
+innerMost'' :: Identity (a -> b) -> Identity a -> Identity b
+innerMost'' = (<*>)
+
+innerMost''' :: (a -> b) -> Identity a -> Identity b
+innerMost''' = (<$>)
+
+innerMost'''' :: (a -> b) -> a -> b
+innerMost'''' = ($)
